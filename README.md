@@ -65,66 +65,81 @@ npm install
 cd ..
 ```
 
-### 2. Start Local Blockchain
+### 2. Get Sepolia Test ETH
 
-Open a terminal and run:
+You'll need Sepolia ETH to pay for gas fees:
+
+1. Get a wallet address from MetaMask
+2. Visit a Sepolia faucet:
+   - [Alchemy Sepolia Faucet](https://sepoliafaucet.com/)
+   - [Infura Sepolia Faucet](https://www.infura.io/faucet/sepolia)
+   - [Chainlink Sepolia Faucet](https://faucets.chain.link/sepolia)
+3. Request test ETH (typically 0.5 ETH per request)
+
+### 3. Configure Environment
+
+Create a `.env` file in the root directory:
+
 ```bash
-npm run node
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+PRIVATE_KEY=your_wallet_private_key
 ```
 
-This starts a Hardhat local blockchain at `http://127.0.0.1:8545`. Keep this terminal running.
+**Get Alchemy API Key**:
+1. Sign up at [Alchemy](https://www.alchemy.com/)
+2. Create a new app for Sepolia testnet
+3. Copy the API key
 
-**Important**: You'll see 20 test accounts with private keys. Copy one of these private keys to import into MetaMask.
+**Get Private Key**:
+1. Open MetaMask → Click the three dots → Account Details → Export Private Key
+2. ⚠️ **NEVER share this key or use it for real funds!**
 
-### 3. Deploy Smart Contracts
+### 4. Deploy Smart Contracts to Sepolia
 
-Open a new terminal and run:
+Deploy the contracts:
 ```bash
-npm run deploy
+npm run deploy:sepolia
 ```
 
 This will:
-- Deploy the MockToken contract
-- Deploy the StakingContract
+- Deploy the MockToken contract to Sepolia
+- Deploy the StakingContract to Sepolia
 - Fund the staking contract with reward tokens
 - Save deployment addresses to `deployment-info.json`
 
-**Copy the deployed contract addresses** from the output. You'll need to update them in the frontend.
+**Copy the deployed contract addresses** from the output.
 
-### 4. Update Frontend Contract Addresses
+### 5. Update Frontend Contract Addresses
 
-After deployment, open `frontend/lib/contracts.ts` and update the contract addresses:
+The deployment script automatically updates the contract addresses, but verify `frontend/lib/contracts.ts`:
 
 ```typescript
 export const CONTRACTS = {
-  mockToken: '0xYOUR_MOCK_TOKEN_ADDRESS',
-  stakingContract: '0xYOUR_STAKING_CONTRACT_ADDRESS',
+  mockToken: '0xYOUR_DEPLOYED_TOKEN_ADDRESS',
+  stakingContract: '0xYOUR_DEPLOYED_STAKING_ADDRESS',
 };
 ```
 
-Replace with the addresses shown in the deployment output.
+### 6. Configure MetaMask for Sepolia
 
-### 5. Configure MetaMask
-
-#### Add Hardhat Local Network
+MetaMask usually has Sepolia pre-configured:
 
 1. Open MetaMask
-2. Click the network dropdown → "Add Network" → "Add a network manually"
-3. Fill in:
-   - **Network Name**: Hardhat Local
-   - **New RPC URL**: `http://127.0.0.1:8545`
-   - **Chain ID**: `31337`
+2. Click the network dropdown
+3. Enable "Show test networks" in Settings if needed
+4. Select "Sepolia test network"
+
+If Sepolia is not available:
+1. Click "Add Network" → "Add a network manually"
+2. Fill in:
+   - **Network Name**: Sepolia
+   - **New RPC URL**: `https://sepolia.infura.io/v3/YOUR_INFURA_KEY` or `https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY`
+   - **Chain ID**: `11155111`
    - **Currency Symbol**: ETH
-4. Click "Save"
+   - **Block Explorer**: `https://sepolia.etherscan.io`
+3. Click "Save"
 
-#### Import Test Account
-
-1. Copy a private key from the Hardhat node terminal output
-2. In MetaMask: Click account icon → "Import Account"
-3. Paste the private key
-4. You now have test ETH to pay for gas!
-
-### 6. Start the Frontend
+### 7. Start the Frontend
 
 ```bash
 npm run dev:frontend
@@ -136,7 +151,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 1. Connect Wallet
 
-Click "Connect Wallet" button and select MetaMask (or your preferred wallet). Make sure you're on the "Hardhat Local" network.
+Click "Connect Wallet" button and select MetaMask (or your preferred wallet). Make sure you're on the "Sepolia test network".
 
 ### 2. Get Test Tokens
 
@@ -210,8 +225,8 @@ rewards = (stakedAmount × rewardRate × timeElapsed) / (365 days × 10000)
 ### Root Directory
 
 - `npm run compile` - Compile smart contracts
-- `npm run node` - Start local Hardhat blockchain
-- `npm run deploy` - Deploy contracts to local network
+- `npm run deploy:sepolia` - Deploy contracts to Sepolia testnet
+- `npm run verify:sepolia` - Verify contracts on Etherscan
 
 ### Frontend Directory
 
@@ -254,20 +269,23 @@ rewards = (stakedAmount × rewardRate × timeElapsed) / (365 days × 10000)
 
 **Problem**: Transactions failing
 - **Solution**: Reset MetaMask account (Settings → Advanced → Clear activity tab data)
+- **Solution**: Ensure you have enough Sepolia ETH for gas fees
 
 **Problem**: Wrong network
-- **Solution**: Ensure "Hardhat Local" network is selected
+- **Solution**: Ensure "Sepolia test network" is selected in MetaMask
 
 **Problem**: Insufficient funds
-- **Solution**: Make sure you imported an account from the Hardhat node output
+- **Solution**: Get more Sepolia ETH from a faucet (see Setup section)
 
 ### Contract Issues
 
 **Problem**: Contract addresses not working
 - **Solution**: Make sure you updated `frontend/lib/contracts.ts` with deployed addresses
+- **Solution**: Verify contracts are deployed on Sepolia (check Etherscan)
 
 **Problem**: Deployment failed
-- **Solution**: Ensure Hardhat node is running first (`npm run node`)
+- **Solution**: Check your `.env` file has correct SEPOLIA_RPC_URL and PRIVATE_KEY
+- **Solution**: Ensure you have enough Sepolia ETH in your deployer account
 
 ### Frontend Issues
 
@@ -276,15 +294,23 @@ rewards = (stakedAmount × rewardRate × timeElapsed) / (365 days × 10000)
 
 **Problem**: Wallet won't connect
 - **Solution**: Refresh page, ensure MetaMask is unlocked, try a different wallet
+- **Solution**: Make sure Sepolia network is added to MetaMask
+
+### Verification Issues
+
+**Problem**: Contract verification failing
+- **Solution**: Ensure you have ETHERSCAN_API_KEY in your `.env` file
+- **Solution**: Wait a few minutes after deployment before verifying
 
 ## Security Notes
 
 ⚠️ **This is for testing only!**
 
-- Uses local Hardhat network with test ETH
+- Uses Sepolia testnet with test ETH (no real value)
 - MockToken can be minted by anyone (intentional for testing)
-- Never use these contracts on mainnet without security audit
-- Private keys from Hardhat are public - never send real funds to these addresses
+- Never use these contracts on mainnet without a professional security audit
+- Keep your private keys secure - never share them or commit them to Git
+- Test ETH has no real value, but still keep your keys safe as practice
 
 ## Advanced Configuration
 
@@ -322,11 +348,12 @@ MIT License - feel free to use for learning and testing!
 ## Support
 
 If you encounter issues:
-1. Check all terminals are running (Hardhat node, frontend)
-2. Verify MetaMask is on correct network
-3. Ensure contract addresses are updated in frontend
+1. Verify MetaMask is on Sepolia test network
+2. Ensure you have Sepolia ETH for gas fees
+3. Confirm contract addresses are updated in frontend
 4. Try resetting MetaMask account data
 5. Check console for error messages
+6. Verify contracts on [Sepolia Etherscan](https://sepolia.etherscan.io)
 
 ## Resources
 
